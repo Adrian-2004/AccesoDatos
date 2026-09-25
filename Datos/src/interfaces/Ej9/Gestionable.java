@@ -1,5 +1,7 @@
 package interfaces.Ej9;
 
-public interface Gestionable {
+public interface Gestionable extends Identificable{
 
+    void activar();
+    void desactivar();
 }
