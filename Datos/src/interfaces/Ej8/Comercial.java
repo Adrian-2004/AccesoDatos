@@ -9,14 +9,14 @@ private double ventas;
         this.ventas = ventas;
     }
 
-    // Método de la interfaz Bonificable
-    @Override
+    
+ 
     public double calcularBonificacion() {
         return ventas * PORCENTAJE_BONO;
     }
 
-    // Método abstracto heredado de Empleado
-    @Override
+   
+ 
     public double calcularSalario() {
         // Salario base + la bonificación por sus ventas
         return salarioBase + calcularBonificacion();
