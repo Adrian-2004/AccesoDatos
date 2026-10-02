@@ -1,6 +1,6 @@
 package interfaces.Ej9;
 
-public class Producto implements Gestionable, Identificable{
+public class Producto implements Gestionable{
 private String nombre;
     private boolean activo;
 

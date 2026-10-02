@@ -1,6 +1,6 @@
 package interfaces.Ej9;
 
-public class Cliente implements Gestionable, Identificable{
+public class Cliente implements Gestionable{
 private String nombre;
     private boolean activo;
 
