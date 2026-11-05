@@ -10,7 +10,7 @@ public class FormConexion extends JFrame implements ActionListener {
     private Container container;
     private JLabel user, pw, port, adress;
     private JTextField userField, pwField, portField, adressField;
-    private JButton connect, muestraTabla, btnNorthwind;
+    private JButton connect, muestraTabla, btnActualizar;
     private JComboBox<String> comboBasesDatos;
 
     public FormConexion() {
@@ -20,18 +20,13 @@ public class FormConexion extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
-       
     }
 
-   private void inicio() {
+    private void inicio() {
         container = this.getContentPane();
-        // Usamos BorderLayout para dividir la ventana por zonas (como un layout principal)
         container.setLayout(new BorderLayout(10, 10));
 
-        // 1. PANEL CENTRAL: Formulario (Etiquetas y Campos de texto)
-        // Usamos GridLayout de 5 filas y 2 columnas, con espacio de 10px entre ellos
         JPanel panelFormulario = new JPanel(new GridLayout(5, 2, 10, 10));
-        // Añadimos márgenes alrededor para que "respire" la interfaz
         panelFormulario.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
         user = new JLabel("Usuario:");
@@ -61,30 +56,24 @@ public class FormConexion extends JFrame implements ActionListener {
         panelFormulario.add(lblComboBD);
         panelFormulario.add(comboBasesDatos);
 
-
-        // 2. PANEL INFERIOR: Botones de acción
-        // Usamos FlowLayout o GridLayout para agrupar los botones abajo
         JPanel panelBotones = new JPanel(new GridLayout(2, 2, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
         connect = new JButton("Conectar");
         muestraTabla = new JButton("Mostrar Tablas");
-        btnNorthwind = new JButton("Ventana Northwind");
-        btnNorthwind.setEnabled(false);
+        btnActualizar = new JButton("Actualizar Precios");
+        btnActualizar.setEnabled(false);
 
         panelBotones.add(connect);
         panelBotones.add(muestraTabla);
-        panelBotones.add(btnNorthwind);
-        // Dejamos un hueco libre en la cuadrícula o añadimos un panel vacío si se prefiere
+        panelBotones.add(btnActualizar);
 
-        // 3. Montamos los paneles en la ventana principal (BorderLayout)
         container.add(panelFormulario, BorderLayout.CENTER);
         container.add(panelBotones, BorderLayout.SOUTH);
 
-        // Listeners (se quedan exactamente igual que los tenías)
         connect.addActionListener(this);
         muestraTabla.addActionListener(this);
-        btnNorthwind.addActionListener(this);
+        btnActualizar.addActionListener(this);
         comboBasesDatos.addActionListener(this);
     }
 
@@ -93,9 +82,9 @@ public class FormConexion extends JFrame implements ActionListener {
         if (e.getSource() == comboBasesDatos) {
             String seleccion = (String) comboBasesDatos.getSelectedItem();
             if ("northwind".equals(seleccion)) {
-                btnNorthwind.setEnabled(true);
+                btnActualizar.setEnabled(true);
             } else {
-                btnNorthwind.setEnabled(false);
+                btnActualizar.setEnabled(false);
             }
         }
 
@@ -112,43 +101,55 @@ public class FormConexion extends JFrame implements ActionListener {
             abrirVentanaTablas(dbSeleccionada);
         }
 
-        if (e.getSource() == btnNorthwind) {
-            JOptionPane.showMessageDialog(this, "Abriendo ventana secundaria de Northwind...");
-        }
-    }
-
-    private void probarConexion() {
-    String servidor = adressField.getText().trim();
-    String puerto = portField.getText().trim();
-    String usuario = userField.getText().trim();
-    //String password = pwField.getText().trim();
-
-    if (servidor.isEmpty() || puerto.isEmpty() || usuario.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Por favor, introduce las credenciales de acceso.", "Aviso", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
+      if (e.getSource() == btnActualizar) {
     String dbSeleccionada = (String) comboBasesDatos.getSelectedItem();
-
-    if (dbSeleccionada == null || dbSeleccionada.equals("Selecciona una BD...")) {
+    if (dbSeleccionada == null || !dbSeleccionada.equalsIgnoreCase("northwind")) {
         JOptionPane.showMessageDialog(this, "Por favor, selecciona una base de datos del desplegable.", "Aviso", JOptionPane.WARNING_MESSAGE);
         return;
     }
-
+    
     try {
-        // ¡Usamos nuestro método centralizado!
-        Connection conexion = obtenerConexion(dbSeleccionada);
-        JOptionPane.showMessageDialog(this, "¡Conexión exitosa a " + dbSeleccionada + "!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        conexion.close();
-
-        cargarBasesDeDatos();
+        // Quita el try de aquí y deja la conexión limpia:
+        Connection conexionUnica = obtenerConexion(dbSeleccionada);
+        
+        ActualizacionPrecioProducts ventanaActualizar = new ActualizacionPrecioProducts(conexionUnica);
+        ventanaActualizar.setVisible(true); 
+        
     } catch (SQLException ex) {
-        JOptionPane.showMessageDialog(this, "Error de conexión:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Error al abrir la conexión:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
+    }
+
+    private void probarConexion() {
+        String servidor = adressField.getText().trim();
+        String puerto = portField.getText().trim();
+        String usuario = userField.getText().trim();
+
+        if (servidor.isEmpty() || puerto.isEmpty() || usuario.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, introduce las credenciales de acceso.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String dbSeleccionada = (String) comboBasesDatos.getSelectedItem();
+
+        if (dbSeleccionada == null || dbSeleccionada.equals("Selecciona una BD...")) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona una base de datos del desplegable.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            Connection conexion = obtenerConexion(dbSeleccionada);
+            JOptionPane.showMessageDialog(this, "¡Conexión exitosa a " + dbSeleccionada + "!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            conexion.close();
+
+            cargarBasesDeDatos();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error de conexión:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private void cargarBasesDeDatos() {
-       
         try (Connection conexion = obtenerConexion("");
              PreparedStatement stmt = conexion.prepareStatement("SHOW DATABASES");
              ResultSet rs = stmt.executeQuery()) {
@@ -173,20 +174,16 @@ public class FormConexion extends JFrame implements ActionListener {
         ventanaTablas.setSize(600, 450);
         ventanaTablas.setLocationRelativeTo(this);
         ventanaTablas.setResizable(true);
-        
-        // Usamos BorderLayout para que se comporte de forma flexible al redimensionar
         ventanaTablas.setLayout(new BorderLayout());
 
-        // 1. ComboBox arriba
         JComboBox<String> comboTablas = new JComboBox<>();
         comboTablas.addItem("Selecciona una tabla...");
 
-        // 2. Área de texto con scroll en el centro
         JTextArea areaDatos = new JTextArea();
         areaDatos.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaDatos);
 
-        // 3. Cargar las tablas en el desplegable
+        // Reutilizamos nuestro método centralizado aquí también
         try (Connection conexion = obtenerConexion(db);
              PreparedStatement stmt = conexion.prepareStatement("SHOW TABLES");
              ResultSet rs = stmt.executeQuery()) {
@@ -199,7 +196,6 @@ public class FormConexion extends JFrame implements ActionListener {
             return;
         }
 
-        // 4. Lógica al seleccionar una tabla
         comboTablas.addActionListener(e -> {
             String tablaSeleccionada = (String) comboTablas.getSelectedItem();
 
@@ -214,7 +210,7 @@ public class FormConexion extends JFrame implements ActionListener {
                  PreparedStatement stmt = conexion.prepareStatement("SELECT * FROM `" + tablaSeleccionada + "`");
                  ResultSet rs = stmt.executeQuery()) {
 
-                java.sql.ResultSetMetaData metaData = rs.getMetaData();
+                ResultSetMetaData metaData = rs.getMetaData();
                 int numCols = metaData.getColumnCount();
 
                 for (int i = 1; i <= numCols; i++) {
@@ -234,35 +230,33 @@ public class FormConexion extends JFrame implements ActionListener {
             }
         });
 
-        // 5. Paneles con márgenes para que respire la interfaz y se adapte fluidamente
         JPanel panelNorte = new JPanel(new BorderLayout());
-        panelNorte.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15)); // Margen superior, izq, abajo, der
+        panelNorte.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
         panelNorte.add(comboTablas, BorderLayout.CENTER);
 
         JPanel panelCentro = new JPanel(new BorderLayout());
         panelCentro.setBorder(BorderFactory.createEmptyBorder(0, 15, 15, 15));
         panelCentro.add(scrollPane, BorderLayout.CENTER);
 
-        // Añadimos las zonas flexibles a la ventana
         ventanaTablas.add(panelNorte, BorderLayout.NORTH);
         ventanaTablas.add(panelCentro, BorderLayout.CENTER);
 
         ventanaTablas.setVisible(true);
     }
+
     public Connection obtenerConexion(String nombreDb) throws SQLException {
-    String servidor = adressField.getText().trim();
-    String puerto = portField.getText().trim();
-    String usuario = userField.getText().trim();
-    String password = pwField.getText().trim();
-    
-    String url;
-    // Si no le pasamos base de datos (para SHOW DATABASES), conectamos al servidor general
-    if (nombreDb == null || nombreDb.isEmpty()) {
-        url = "jdbc:mysql://" + servidor + ":" + puerto + "?useSSL=false&serverTimezone=UTC";
-    } else {
-        url = "jdbc:mysql://" + servidor + ":" + puerto + "/" + nombreDb + "?useSSL=false&serverTimezone=UTC";
+        String servidor = adressField.getText().trim();
+        String puerto = portField.getText().trim();
+        String usuario = userField.getText().trim();
+        String password = pwField.getText().trim();
+        
+        String url;
+        if (nombreDb == null || nombreDb.isEmpty()) {
+            url = "jdbc:mysql://" + servidor + ":" + puerto + "?useSSL=false&serverTimezone=UTC";
+        } else {
+            url = "jdbc:mysql://" + servidor + ":" + puerto + "/" + nombreDb + "?useSSL=false&serverTimezone=UTC";
+        }
+        
+        return DriverManager.getConnection(url, usuario, password);
     }
-    
-    return DriverManager.getConnection(url, usuario, password);
-}
 }
