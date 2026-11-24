@@ -2,6 +2,8 @@ package es.aula;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 /*
 Tabla Actor
 CREATE TABLE `actor` (
@@ -32,6 +34,14 @@ private String last_name;
  @Column (name="last_update")
  private Instant last_update;
 
+@ManyToMany
+@JoinTable(
+    name = "film_actor",
+    joinColumns = @JoinColumn(name = "actor_id"),
+    inverseJoinColumns = @JoinColumn(name = "film_id")
+)
+private List<Film> films = new ArrayList<>();
+
 protected Actor(){
 
 }
@@ -46,6 +56,10 @@ public String getLastName(){
     return last_name;
 
 }
+public List<Film> getFilms(){
+    return films;
+}
+
 
 public Instant getLastUpdate(){
     return last_update;

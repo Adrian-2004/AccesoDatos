@@ -62,7 +62,7 @@ try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("aulaPU");
       System.out.println("No existe el actor con ID 1");
     }else{
       System.out.println("Nombre: "+actor.getFirstName()+", apellido: "+actor.getLastName()); //comrpuebo que existe el actor
-
+      
     }
     List<Actor>actores = em.createQuery(""" 
       select a from Actor a
@@ -73,12 +73,20 @@ try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("aulaPU");
       //se usa ".setParameter(nombre, valor)"
       //y en el ps se pone en vez de las ?, se pone un :{nombre}
       .getResultList();
-
+      
       for(Actor a :actores){
         System.out.println(a.getId()+" | "+a.getFirstName()+" | "+a.getLastName());
       }
       System.out.println("Resultados: "+actores.size());
-          
+      
+      em.find(Actor.class, 1);
+      if(actor == null){
+        System.out.println("No existe el actor con ID 1");
+      }else{
+        System.out.println("Nombre: "+actor.getFirstName()+", apellido: "+actor.getLastName()); //comrpuebo que existe el actor
+      }
+
+      
     }
 
 }
